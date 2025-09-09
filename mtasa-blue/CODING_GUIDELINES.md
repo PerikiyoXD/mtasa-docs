@@ -9,19 +9,19 @@ return *(float*)0xC81308; // What is this?
 
 **Do:** Define with descriptive names
 ```cpp
-#define NUM_WETROADS 0xC81308
+constexpr std::uintptr_t NUM_WETROADS = 0xC81308;
 return *(float*)NUM_WETROADS;
 ```
 
 **Prefixes for definitions:**
 ```cpp
-#define FUNC_RemoveRef          0x4C4BB0  // Function addresses
-#define ARRAY_aCannons          0xC80740  // Array addresses  
-#define STRUCT_CAESoundManager  0xB62CB0  // Struct addresses
-#define SIZE_CWaterCannon       0x3CC     // Object sizes
-#define NUM_CWaterCannon_Offset 0x32C     // Numbers/offsets
-#define CLASS_CText             0xC1B340  // Class addresses
-#define VAR_CTempColModels      0x968DF0  // Variable addresses
+constexpr std::uintptr_t FUNC_RemoveRef          = 0x4C4BB0;  // Function addresses
+constexpr std::uintptr_t ARRAY_aCannons          = 0xC80740;  // Array addresses  
+constexpr std::uintptr_t STRUCT_CAESoundManager  = 0xB62CB0;  // Struct addresses
+constexpr std::size_t    SIZE_CWaterCannon       = 0x3CC;     // Object sizes
+constexpr std::size_t    NUM_CWaterCannon_Offset = 0x32C;     // Numbers/offsets
+constexpr std::uintptr_t CLASS_CText             = 0xC1B340;  // Class addresses
+constexpr std::uintptr_t VAR_CTempColModels      = 0x968DF0;  // Variable addresses
 ```
 
 ## Naming Conventions
@@ -42,7 +42,7 @@ class MyClass;
 ```cpp
 CVector m_vecPosition;
 bool    m_isVisible;
-int     m_playerCount;
+std::int32_t m_playerCount;
 ```
 
 **Avoid Hungarian notation in new code:**
@@ -54,7 +54,7 @@ bool          g_bCrashTwiceAnHour;
 
 // New style
 float         value;
-unsigned char m_value;
+std::uint8_t  m_value;
 bool          g_crashTwiceAnHour;
 ```
 
@@ -77,7 +77,8 @@ MyFunction();
 ### Early Returns
 **Don't:** Nest conditions deeply
 ```cpp
-bool RespawnObject(CElement* pElement) {
+bool RespawnObject(CElement* pElement)
+{
     if (IS_OBJECT(pElement)) {
         CObject* pObject = static_cast<CObject*>(pElement);
         if (pObject) {
@@ -91,11 +92,12 @@ bool RespawnObject(CElement* pElement) {
 
 **Do:** Exit early, reduce nesting
 ```cpp
-bool RespawnObject(CElement* pElement) {
+bool RespawnObject(CElement* pElement)
+{
     if (!IS_OBJECT(pElement))
         return false;
     
-    CObject* pObject = static_cast<CObject*>(pElement);
+    auto* pObject = static_cast<CObject*>(pElement);
     if (!pObject)
         return false;
         
@@ -107,10 +109,10 @@ bool RespawnObject(CElement* pElement) {
 ### Early Continue
 **Don't:** Nest loop conditions
 ```cpp
-for(auto i = 0; i < 255; i++) {
-    if(conditionA) {
+for (auto i = 0; i < 255; i++) {
+    if (conditionA) {
         someCode();
-        if(conditionB) {
+        if (conditionB) {
             otherCode();
         }
     }
@@ -119,7 +121,7 @@ for(auto i = 0; i < 255; i++) {
 
 **Do:** Use continue to flatten logic
 ```cpp
-for(auto i = 0; i < 255; i++) {
+for (auto i = 0; i < 255; i++) {
     if (!conditionA)
         continue;
         
@@ -145,7 +147,8 @@ auto* pObject = static_cast<CDeathmatchObject*>(pEntity);
 **Use for simple conditions:**
 ```cpp
 // Don't
-const CPositionRotationAnimation* CObject::GetMoveAnimation() {
+const CPositionRotationAnimation* CObject::GetMoveAnimation()
+{
     if (IsMoving()) {
         return m_pMoveAnimation;
     } else {
@@ -154,7 +157,8 @@ const CPositionRotationAnimation* CObject::GetMoveAnimation() {
 }
 
 // Do
-const CPositionRotationAnimation* CObject::GetMoveAnimation() {
+const CPositionRotationAnimation* CObject::GetMoveAnimation()
+{
     return IsMoving() ? m_pMoveAnimation : nullptr;
 }
 ```
@@ -163,12 +167,12 @@ const CPositionRotationAnimation* CObject::GetMoveAnimation() {
 **Omit braces for short single statements:**
 ```cpp
 // Short condition
-if (!bStillRunning)
+if (!isStillRunning)
     StopMoving();
 
 // Add blank line after braceless statements for readability
 PreCheck();
-if (!bStillRunning)
+if (!isStillRunning)
     StopMoving();
 
 PostCheck();
@@ -177,17 +181,17 @@ PostCheck();
 **Keep braces for multi-line or complex statements:**
 ```cpp
 // Don't do this
-for (dont)
-    for (do)
-        for (this)
-            complexOperation();
+for (auto i = 0; i < count; ++i)
+    for (auto j = 0; j < size; ++j)
+        for (auto k = 0; k < depth; ++k)
+            ComplexOperation();
 ```
 
 ### Simple Getters in Headers
 **Place simple return functions in headers:**
 ```cpp
 // In header file
-int GetGameSpeed() const noexcept { return m_iGameSpeed; }
+std::int32_t GetGameSpeed() const noexcept { return m_gameSpeed; }
 
 // Don't put in .cpp file unless complex logic needed
 ```
@@ -195,33 +199,35 @@ int GetGameSpeed() const noexcept { return m_iGameSpeed; }
 ### Remove Unnecessary Parentheses
 ```cpp
 // Don't
-bool CClientPed::IsDead() {
+bool CClientPed::IsDead()
+{
     return (m_status == STATUS_DEAD);
 }
 
 // Do
-bool CClientPed::IsDead() {
+bool CClientPed::IsDead()
+{
     return m_status == STATUS_DEAD;
 }
 ```
 
 ### Use Range-Based Loops
 ```cpp
-std::vector<int> vec;
-std::map<std::string, int> myMap;
+std::vector<std::int32_t> vec;
+std::map<std::string, std::int32_t> playerScores;
 
 // Don't
-for (std::vector<int>::iterator it = vec.begin(); it != vec.end(); it++)
+for (std::vector<std::int32_t>::iterator it = vec.begin(); it != vec.end(); ++it)
 
 // Do
-for (const auto& v : vec)
-for (const int& v : vec)
+for (const auto& value : vec)
+for (const std::int32_t& value : vec)
 
 // For maps with structured binding
-for (const auto& [key, value] : myMap)
+for (const auto& [name, score] : playerScores)
 
 // When iterator needed, use auto
-for (auto it = vec.begin(); it != vec.end(); it++)
+for (auto it = vec.begin(); it != vec.end(); ++it)
 ```
 
 ## Header Files
@@ -242,18 +248,33 @@ for (auto it = vec.begin(); it != vec.end(); it++)
 
 **Use `#pragma once` instead of include guards** (remove old `#ifndef` guards when updating)
 
+## Source Files
+
+**Always start with:**
+```cpp
+/*****************************************************************************
+ *
+ *  PROJECT:     Multi Theft Auto
+ *  LICENSE:     See LICENSE in the top level directory
+ *
+ *  Multi Theft Auto is available from https://www.multitheftauto.com/
+ *
+ *****************************************************************************/
+#include "StdInc.h"
+```
+
 ## Modern C++ Practices
 
 ### Specifiers
 **Use `const` and `constexpr` everywhere possible:**
 ```cpp
-const int maxPlayers = 32;
+const std::int32_t maxPlayers = 32;
 constexpr float PI = 3.14159f;
 ```
 
 **Use `noexcept` when functions don't throw (but be careful - throws terminate program):**
 ```cpp
-int GetPlayerCount() const noexcept { return m_playerCount; }
+std::int32_t GetPlayerCount() const noexcept { return m_playerCount; }
 ```
 
 ### Null Pointers
@@ -268,10 +289,11 @@ ptr = nullptr;
 ### Member Initialization Lists
 **Don't:** Initialize in constructor body
 ```cpp
-CObject::CObject(CElement* pParent, CObjectManager* pManager) {
-    m_iType = CElement::OBJECT;
+CObject::CObject(CElement* pParent, CObjectManager* pManager)
+{
+    m_type = CElement::OBJECT;
     m_pObjectManager = pManager;
-    m_usModel = 0xFFFF;
+    m_model = 0xFFFF;
     m_pMoveAnimation = NULL;
 }
 ```
@@ -279,11 +301,11 @@ CObject::CObject(CElement* pParent, CObjectManager* pManager) {
 **Do:** Use initialization lists
 ```cpp
 CObject::CObject(CElement* pParent, CObjectManager* pManager)
-    : m_iType(CElement::OBJECT),
+    : m_type(CElement::OBJECT),
       m_pObjectManager(pManager),
-      m_usModel(0xFFFF),
-      m_pMoveAnimation(nullptr) {
-    
+      m_model(0xFFFF),
+      m_pMoveAnimation(nullptr)
+{
     SetTypeName("object");
     pManager->AddToList(this);
 }

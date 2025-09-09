@@ -46,13 +46,16 @@ std::int32_t m_playerCount;
 ```
 
 **Avoid Hungarian notation in new code:**
+
+**Don't:**
 ```cpp
-// Old style (only for consistency with existing code)
 float         fValue;
 unsigned char m_ucValue;
 bool          g_bCrashTwiceAnHour;
+```
 
-// New style
+**Do:**
+```cpp
 float         value;
 std::uint8_t  m_value;
 bool          g_crashTwiceAnHour;
@@ -75,6 +78,7 @@ MyFunction();
 ## Code Structure
 
 ### Early Returns
+
 **Don't:** Nest conditions deeply
 ```cpp
 bool RespawnObject(CElement* pElement)
@@ -107,6 +111,7 @@ bool RespawnObject(CElement* pElement)
 ```
 
 ### Early Continue
+
 **Don't:** Nest loop conditions
 ```cpp
 for (auto i = 0; i < 255; i++) {
@@ -134,6 +139,7 @@ for (auto i = 0; i < 255; i++) {
 ```
 
 ### Auto Usage
+
 **Use `auto*` for obvious pointer types:**
 ```cpp
 // Instead of this verbose line
@@ -144,9 +150,9 @@ auto* pObject = static_cast<CDeathmatchObject*>(pEntity);
 ```
 
 ### Ternary Operators
-**Use for simple conditions:**
+
+**Don't:**
 ```cpp
-// Don't
 const CPositionRotationAnimation* CObject::GetMoveAnimation()
 {
     if (IsMoving()) {
@@ -155,8 +161,10 @@ const CPositionRotationAnimation* CObject::GetMoveAnimation()
         return nullptr;
     }
 }
+```
 
-// Do
+**Do:** Use for simple conditions
+```cpp
 const CPositionRotationAnimation* CObject::GetMoveAnimation()
 {
     return IsMoving() ? m_pMoveAnimation : nullptr;
@@ -164,6 +172,7 @@ const CPositionRotationAnimation* CObject::GetMoveAnimation()
 ```
 
 ### Braces for Single Statements
+
 **Omit braces for short single statements:**
 ```cpp
 // Short condition
@@ -178,9 +187,8 @@ if (!isStillRunning)
 PostCheck();
 ```
 
-**Keep braces for multi-line or complex statements:**
+**Don't:** Chain multiple braceless statements
 ```cpp
-// Don't do this
 for (auto i = 0; i < count; ++i)
     for (auto j = 0; j < size; ++j)
         for (auto k = 0; k < depth; ++k)
@@ -188,6 +196,7 @@ for (auto i = 0; i < count; ++i)
 ```
 
 ### Simple Getters in Headers
+
 **Place simple return functions in headers:**
 ```cpp
 // In header file
@@ -197,14 +206,17 @@ std::int32_t GetGameSpeed() const noexcept { return m_gameSpeed; }
 ```
 
 ### Remove Unnecessary Parentheses
+
+**Don't:**
 ```cpp
-// Don't
 bool CClientPed::IsDead()
 {
     return (m_status == STATUS_DEAD);
 }
+```
 
-// Do
+**Do:**
+```cpp
 bool CClientPed::IsDead()
 {
     return m_status == STATUS_DEAD;
@@ -212,14 +224,17 @@ bool CClientPed::IsDead()
 ```
 
 ### Use Range-Based Loops
+
+**Don't:**
+```cpp
+for (std::vector<std::int32_t>::iterator it = vec.begin(); it != vec.end(); ++it)
+```
+
+**Do:**
 ```cpp
 std::vector<std::int32_t> vec;
 std::map<std::string, std::int32_t> playerScores;
 
-// Don't
-for (std::vector<std::int32_t>::iterator it = vec.begin(); it != vec.end(); ++it)
-
-// Do
 for (const auto& value : vec)
 for (const std::int32_t& value : vec)
 
@@ -267,14 +282,16 @@ for (auto it = vec.begin(); it != vec.end(); ++it)
 ## Modern C++ Practices
 
 ### Type Casting
-**Use C++ casts instead of C-style casts:**
+
+**Don't:** Use C-style casts
 ```cpp
-// Don't
 auto* pObject = (CObject*)pElement;
 float value = (float)intValue;
 std::uintptr_t address = (std::uintptr_t)pointer;
+```
 
-// Do
+**Do:** Use C++ casts
+```cpp
 auto* pObject = static_cast<CObject*>(pElement);
 float value = static_cast<float>(intValue);
 std::uintptr_t address = reinterpret_cast<std::uintptr_t>(pointer);
@@ -290,7 +307,26 @@ std::uint32_t bits = std::bit_cast<std::uint32_t>(floatValue);
 - `dynamic_cast` - Runtime polymorphic casting
 - `std::bit_cast` - Type punning
 
+### Type Aliases
+
+**Don't:** Use typedef for function signatures
+```cpp
+typedef std::uint32_t(__cdecl * Function_ModelInfoRelease)(std::uint32_t modelId);
+reinterpret_cast<Function_ModelInfoRelease>(FUNC_MODEL_INFO_RELEASE)(id);
+```
+
+**Do:** Use `using` instead
+```cpp
+using Function_ModelInfoRelease = std::uint32_t(__cdecl *)(std::uint32_t modelId);
+reinterpret_cast<Function_ModelInfoRelease>(FUNC_MODEL_INFO_RELEASE)(id);
+
+// Also prefer using for simple aliases
+using PlayerId = std::uint32_t;
+using PlayerList = std::vector<CPlayer*>;
+```
+
 ### Specifiers
+
 **Use `const` and `constexpr` everywhere possible:**
 ```cpp
 const std::int32_t maxPlayers = 32;
@@ -303,15 +339,19 @@ std::int32_t GetPlayerCount() const noexcept { return m_playerCount; }
 ```
 
 ### Null Pointers
-```cpp
-// Don't
-ptr = NULL;
 
-// Do  
+**Don't:**
+```cpp
+ptr = NULL;
+```
+
+**Do:**
+```cpp
 ptr = nullptr;
 ```
 
 ### Member Initialization Lists
+
 **Don't:** Initialize in constructor body
 ```cpp
 CObject::CObject(CElement* pParent, CObjectManager* pManager)
@@ -337,23 +377,26 @@ CObject::CObject(CElement* pParent, CObjectManager* pManager)
 ```
 
 ### Standard Types
-**Use namespaced standard types:**
+
+**Don't:**
 ```cpp
-// Don't
 uint32_t value;
 size_t length;
+```
 
-// Do
+**Do:** Use namespaced standard types
+```cpp
 std::uint32_t value;  // from <cstdint>
 std::size_t length;   // from <cstddef>
 ```
 
-**Use `std::string` instead of `SString` in new code:**
+**Don't:** Use SString in new code
 ```cpp
-// Don't (in new code)
 SString playerName;
+```
 
-// Do
+**Do:** Use std::string
+```cpp
 std::string playerName;
 ```
 

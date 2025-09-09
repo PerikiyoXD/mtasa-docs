@@ -250,7 +250,7 @@ for (auto it = vec.begin(); it != vec.end(); ++it)
 
 ## Source Files
 
-**Always start with:**
+**Always include copyright and Standard Include (except when not needed):**
 ```cpp
 /*****************************************************************************
  *
@@ -260,10 +260,35 @@ for (auto it = vec.begin(); it != vec.end(); ++it)
  *  Multi Theft Auto is available from https://www.multitheftauto.com/
  *
  *****************************************************************************/
+
 #include "StdInc.h"
 ```
 
 ## Modern C++ Practices
+
+### Type Casting
+**Use C++ casts instead of C-style casts:**
+```cpp
+// Don't
+auto* pObject = (CObject*)pElement;
+float value = (float)intValue;
+std::uintptr_t address = (std::uintptr_t)pointer;
+
+// Do
+auto* pObject = static_cast<CObject*>(pElement);
+float value = static_cast<float>(intValue);
+std::uintptr_t address = reinterpret_cast<std::uintptr_t>(pointer);
+
+// For compile-time type punning
+std::uint32_t bits = std::bit_cast<std::uint32_t>(floatValue);
+```
+
+**Cast types:**
+- `static_cast` - Safe conversions (numeric, class hierarchy)
+- `reinterpret_cast` - Pointer/reference type changes  
+- `const_cast` - Remove const/volatile (avoid when possible)
+- `dynamic_cast` - Runtime polymorphic casting
+- `std::bit_cast` - Type punning
 
 ### Specifiers
 **Use `const` and `constexpr` everywhere possible:**
